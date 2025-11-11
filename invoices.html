@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <script type="module" src="firebase-config.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الفواتير - نظام الحسابات</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3a0ca3;
+            --success-color: #4cc9f0;
+            --accent-color: #7209b7;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --danger-color: #e63946;
+            --warning-color: #fca311;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: var(--dark-color);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem;
+            text-align: center;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+        }
+        
+        h1 {
+            color: var(--secondary-color);
+            margin-bottom: 10px;
+            font-size: 2.2rem;
+        }
+        
+        .header-subtitle {
+            color: var(--accent-color);
+            font-size: 1.1rem;
+        }
+        
+        .back-btn {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(135deg, var(--warning-color), #f3722c);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+        
+        .back-btn:hover {
+            transform: translateY(-50%) translateX(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .connection-status {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #4ade80, #22c55e);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .filters-section {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .filter-group label {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--secondary-color);
+        }
+        
+        .filter-group select,
+        .filter-group input {
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        .invoices-table-container {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            overflow-x: auto;
+        }
+        
+        .invoices-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .invoices-table th,
+        .invoices-table td {
+            padding: 15px;
+            text-align: right;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .invoices-table th {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+        
+        .invoices-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .invoices-table tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .invoice-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, var(--warning-color), #f3722c);
+            color: white;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger-color), #c1121f);
+            color: white;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, var(--success-color), #4895ef);
+            color: white;
+        }
+        
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+        
+        .status-completed {
+            background: var(--success-color);
+            color: white;
+        }
+        
+        .status-pending {
+            background: var(--warning-color);
+            color: white;
+        }
+        
+        .status-cancelled {
+            background: var(--danger-color);
+            color: white;
+        }
+        
+        .no-invoices {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .stats-section {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #4cc9f0, #4361ee);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .payment-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--danger-color);
+        }
+
+        /* مؤشر الحفظ التلقائي */
+        .auto-save-indicator {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 15px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .auto-save-indicator.visible {
+            opacity: 1;
+        }
+        
+        .auto-save-indicator.saving {
+            background: linear-gradient(135deg, #4cc9f0, #4361ee);
+            color: white;
+        }
+        
+        .auto-save-indicator.saved {
+            background: linear-gradient(135deg, #4ade80, #22c55e);
+            color: white;
+        }
+
+        .sync-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 15px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <button class="back-btn" onclick="goToMain()">
+                <i class="fas fa-arrow-right"></i> العودة
+            </button>
+            <div class="connection-status" id="connectionStatus">
+                <i class="fas fa-wifi"></i> متصل
+            </div>
+            <h1><i class="fas fa-file-invoice"></i> نظام الفواتير</h1>
+            <p class="header-subtitle">إدارة وعرض جميع فواتير العملاء</p>
+        </header>
+        
+        <!-- قسم الإحصائيات -->
+        <section class="stats-section">
+            <h2><i class="fas fa-chart-bar"></i> إحصائيات الفواتير</h2>
+            <div class="stats-grid" id="statsGrid">
+                <!-- سيتم ملء هذا القسم بالإحصائيات -->
+            </div>
+        </section>
+        
+        <!-- قسم الفلترة -->
+        <section class="filters-section">
+            <h2><i class="fas fa-filter"></i> تصفية الفواتير</h2>
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label for="clientFilter">العميل</label>
+                    <select id="clientFilter">
+                        <option value="">جميع العملاء</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="statusFilter">حالة الفاتورة</label>
+                    <select id="statusFilter">
+                        <option value="">جميع الحالات</option>
+                        <option value="completed">مكتملة</option>
+                        <option value="pending">قيد الانتظار</option>
+                        <option value="cancelled">ملغاة</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="dateFrom">من تاريخ</label>
+                    <input type="date" id="dateFrom">
+                </div>
+                <div class="filter-group">
+                    <label for="dateTo">إلى تاريخ</label>
+                    <input type="date" id="dateTo">
+                </div>
+            </div>
+            <button class="btn btn-primary" id="applyFilters">
+                <i class="fas fa-check"></i> تطبيق الفلترة
+            </button>
+            <button class="btn btn-warning" id="resetFilters">
+                <i class="fas fa-redo"></i> إعادة التعيين
+            </button>
+        </section>
+        
+        <!-- جدول الفواتير -->
+        <section class="invoices-table-container">
+            <h2><i class="fas fa-list"></i> قائمة الفواتير</h2>
+            <table class="invoices-table">
+                <thead>
+                    <tr>
+                        <th>رقم الفاتورة</th>
+                        <th>اسم العميل</th>
+                        <th>رقم العميل</th>
+                        <th>التاريخ</th>
+                        <th>المبلغ الإجمالي</th>
+                        <th>المبلغ المدفوع</th>
+                        <th>المبلغ المتبقي</th>
+                        <th>الحالة</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="invoicesTableBody">
+                    <!-- سيتم ملء هذا القسم بالفواتير -->
+                </tbody>
+            </table>
+        </section>
+
+        <!-- أزرار التنقل -->
+        <div class="nav-buttons">
+            <button class="btn btn-warning" onclick="goToClients()">
+                <i class="fas fa-users"></i> صفحة العملاء
+            </button>
+            <button class="btn btn-success" onclick="goToInventory()">
+                <i class="fas fa-warehouse"></i> صفحة الجرد
+            </button>
+            <button class="btn btn-primary" onclick="goToDashboard()">
+                <i class="fas fa-tachometer-alt"></i> لوحة التحكم
+            </button>
+            <button class="btn btn-primary" onclick="goToMain()">
+                <i class="fas fa-plus"></i> صفحة التسجيل
+            </button>
+        </div>
+    </div>
+
+    <!-- نافذة إضافة دفعة -->
+    <div class="payment-modal" id="paymentModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-money-bill-wave"></i> إضافة دفعة جديدة</h3>
+                <button class="close-modal" id="closeModal">&times;</button>
+            </div>
+            <form id="paymentForm">
+                <div class="form-group">
+                    <label for="paymentAmount">مبلغ الدفعة (درهم)</label>
+                    <input type="number" id="paymentAmount" required>
+                </div>
+                <div class="form-group">
+                    <label for="paymentType">نوع الدفعة</label>
+                    <select id="paymentType" required>
+                        <option value="الدفعة الأولى">الدفعة الأولى</option>
+                        <option value="الدفعة الثانية">الدفعة الثانية</option>
+                        <option value="دفعة إضافية">دفعة إضافية</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-success btn-full">
+                    <i class="fas fa-check"></i> تأكيد الدفعة
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- مؤشر الحفظ التلقائي -->
+    <div class="auto-save-indicator" id="autoSaveIndicator">
+        <i class="fas fa-save"></i>
+        <span id="saveMessage">جارٍ الحفظ...</span>
+    </div>
+
+    <!-- مؤشر المزامنة -->
+    <div class="sync-status" id="syncStatus">
+        <i class="fas fa-sync-alt"></i>
+        <span>جاري المزامنة...</span>
+    </div>
+
+    <script>
+        let savedClients = [];
+        let filteredInvoices = [];
+        let allInvoices = [];
+        let currentInvoiceId = null;
+        let autoSaveTimeout;
+
+        // تهيئة الصفحة
+        document.addEventListener('DOMContentLoaded', function() {
+            loadClients();
+            generateInvoices();
+            setupEventListeners();
+            populateClientFilter();
+            displayInvoices();
+            updateStats();
+            setupAutoSave();
+        });
+
+        // إعداد الحفظ التلقائي
+        function setupAutoSave() {
+            // مراقبة تغييرات التخزين المحلي
+            window.addEventListener('storage', function(e) {
+                if (e.key === 'savedClients') {
+                    triggerAutoSave();
+                }
+            });
+            
+            // تحديث دوري كل 30 ثانية
+            setInterval(triggerAutoSave, 30000);
+        }
+
+        // تشغيل الحفظ التلقائي
+        function triggerAutoSave() {
+            clearTimeout(autoSaveTimeout);
+            
+            showAutoSaveIndicator('جارٍ حفظ التغييرات...', 'saving');
+            
+            autoSaveTimeout = setTimeout(() => {
+                loadClients();
+                generateInvoices();
+                displayInvoices();
+                updateStats();
+                showAutoSaveIndicator('تم حفظ التغييرات تلقائياً', 'saved');
+            }, 1000);
+        }
+
+        // عرض مؤشر الحفظ
+        function showAutoSaveIndicator(message, type) {
+            const indicator = document.getElementById('autoSaveIndicator');
+            const messageElement = document.getElementById('saveMessage');
+            
+            messageElement.textContent = message;
+            indicator.className = 'auto-save-indicator visible ' + type;
+            
+            setTimeout(() => {
+                indicator.classList.remove('visible');
+            }, 3000);
+        }
+
+        // تحميل العملاء من التخزين المحلي
+        function loadClients() {
+            const storedClients = localStorage.getItem('savedClients');
+            if (storedClients) {
+                savedClients = JSON.parse(storedClients);
+            }
+        }
+
+        // توليد الفواتير من بيانات العملاء
+        function generateInvoices() {
+            allInvoices = [];
+            savedClients.forEach(client => {
+                if (client.totalAmount && client.totalAmount > 0) {
+                    let paidAmount = 0;
+                    if (client.paymentHistory) {
+                        client.paymentHistory.forEach(payment => {
+                            const amount = parseFloat(payment.amount);
+                            if (!isNaN(amount)) {
+                                paidAmount += amount;
+                            }
+                        });
+                    }
+                    
+                    const remainingAmount = client.totalAmount - paidAmount;
+                    const status = remainingAmount === 0 ? 'completed' : 
+                                  paidAmount > 0 ? 'pending' : 'pending';
+                    
+                    const invoice = {
+                        id: `INV-${client.id}-${Date.now()}`,
+                        clientId: client.id,
+                        clientName: client.name,
+                        date: client.registrationDate,
+                        totalAmount: client.totalAmount,
+                        paidAmount: paidAmount,
+                        remainingAmount: remainingAmount,
+                        status: status,
+                        services: client.selectedServices || [],
+                        details: client.details || '',
+                        paymentHistory: client.paymentHistory || []
+                    };
+                    
+                    allInvoices.push(invoice);
+                }
+            });
+            filteredInvoices = [...allInvoices];
+        }
+
+        // إعداد مستمعي الأحداث
+        function setupEventListeners() {
+            // تطبيق الفلترة
+            document.getElementById('applyFilters').addEventListener('click', function() {
+                applyFilters();
+            });
+            
+            // إعادة تعيين الفلترة
+            document.getElementById('resetFilters').addEventListener('click', function() {
+                resetFilters();
+            });
+
+            // نافذة الدفعات
+            document.getElementById('closeModal').addEventListener('click', function() {
+                document.getElementById('paymentModal').style.display = 'none';
+            });
+
+            // form إضافة دفعة
+            document.getElementById('paymentForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                addPayment();
+            });
+        }
+
+        // تعبئة فلتر العملاء
+        function populateClientFilter() {
+            const clientFilter = document.getElementById('clientFilter');
+            clientFilter.innerHTML = '<option value="">جميع العملاء</option>';
+            
+            savedClients.forEach(client => {
+                const option = document.createElement('option');
+                option.value = client.id;
+                option.textContent = `${client.name} (${client.id})`;
+                clientFilter.appendChild(option);
+            });
+        }
+
+        // تطبيق الفلترة
+        function applyFilters() {
+            const clientFilter = document.getElementById('clientFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            const dateFrom = document.getElementById('dateFrom').value;
+            const dateTo = document.getElementById('dateTo').value;
+            
+            filteredInvoices = allInvoices.filter(invoice => {
+                // فلترة العميل
+                if (clientFilter && invoice.clientId !== clientFilter) {
+                    return false;
+                }
+                
+                // فلترة الحالة
+                if (statusFilter && invoice.status !== statusFilter) {
+                    return false;
+                }
+                
+                // فلترة التاريخ
+                if (dateFrom) {
+                    const invoiceDate = new Date(invoice.date);
+                    const fromDate = new Date(dateFrom);
+                    if (invoiceDate < fromDate) {
+                        return false;
+                    }
+                }
+                
+                if (dateTo) {
+                    const invoiceDate = new Date(invoice.date);
+                    const toDate = new Date(dateTo);
+                    if (invoiceDate > toDate) {
+                        return false;
+                    }
+                }
+                
+                return true;
+            });
+            
+            displayInvoices();
+            updateStats();
+        }
+
+        // إعادة تعيين الفلترة
+        function resetFilters() {
+            document.getElementById('clientFilter').value = '';
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('dateFrom').value = '';
+            document.getElementById('dateTo').value = '';
+            filteredInvoices = [...allInvoices];
+            displayInvoices();
+            updateStats();
+        }
+
+        // عرض الفواتير
+        function displayInvoices() {
+            const tableBody = document.getElementById('invoicesTableBody');
+            
+            if (filteredInvoices.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="no-invoices">
+                            <i class="fas fa-file-invoice fa-3x" style="margin-bottom: 20px; opacity: 0.5;"></i>
+                            <h3>لا توجد فواتير</h3>
+                            <p>لم يتم العثور على فواتير مطابقة لمعايير البحث</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tableBody.innerHTML = '';
+            
+            filteredInvoices.forEach(invoice => {
+                const row = document.createElement('tr');
+                
+                const statusText = {
+                    'completed': 'مكتملة',
+                    'pending': 'قيد الانتظار',
+                    'cancelled': 'ملغاة'
+                };
+                
+                const statusClass = {
+                    'completed': 'status-completed',
+                    'pending': 'status-pending',
+                    'cancelled': 'status-cancelled'
+                };
+                
+                row.innerHTML = `
+                    <td>${invoice.id}</td>
+                    <td>${invoice.clientName}</td>
+                    <td>${invoice.clientId}</td>
+                    <td>${invoice.date}</td>
+                    <td>${invoice.totalAmount} درهم</td>
+                    <td>${invoice.paidAmount} درهم</td>
+                    <td>${invoice.remainingAmount} درهم</td>
+                    <td>
+                        <span class="status-badge ${statusClass[invoice.status]}">
+                            ${statusText[invoice.status]}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="invoice-actions">
+                            <button class="btn btn-primary btn-view" data-invoice-id="${invoice.id}">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-warning btn-add-payment" data-invoice-id="${invoice.id}">
+                                <i class="fas fa-money-bill"></i>
+                            </button>
+                            <button class="btn btn-danger btn-delete" data-invoice-id="${invoice.id}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                
+                // إضافة الأحداث للأزرار
+                const viewBtn = row.querySelector('.btn-view');
+                const addPaymentBtn = row.querySelector('.btn-add-payment');
+                const deleteBtn = row.querySelector('.btn-delete');
+                
+                viewBtn.addEventListener('click', function() {
+                    viewInvoice(invoice.id);
+                });
+                
+                addPaymentBtn.addEventListener('click', function() {
+                    openPaymentModal(invoice.id);
+                });
+                
+                deleteBtn.addEventListener('click', function() {
+                    deleteInvoice(invoice.id);
+                });
+                
+                tableBody.appendChild(row);
+            });
+        }
+
+        // عرض الفاتورة
+        function viewInvoice(invoiceId) {
+            const invoice = allInvoices.find(inv => inv.id === invoiceId);
+            if (invoice) {
+                let servicesList = '';
+                if (invoice.services && invoice.services.length > 0) {
+                    servicesList = invoice.services.map(service => 
+                        `${service.name}: ${service.price} درهم`
+                    ).join('\n');
+                }
+                
+                let paymentHistory = '';
+                if (invoice.paymentHistory && invoice.paymentHistory.length > 0) {
+                    paymentHistory = invoice.paymentHistory.map(payment => 
+                        `${payment.type}: ${payment.amount} درهم - ${payment.date}`
+                    ).join('\n');
+                }
+                
+                alert(`فاتورة رقم: ${invoice.id}\nالعميل: ${invoice.clientName}\nالتاريخ: ${invoice.date}\nالمبلغ الإجمالي: ${invoice.totalAmount} درهم\nالمبلغ المدفوع: ${invoice.paidAmount} درهم\nالمبلغ المتبقي: ${invoice.remainingAmount} درهم\n\nالخدمات:\n${servicesList}\n\nسجل المدفوعات:\n${paymentHistory}`);
+            }
+        }
+
+        // فتح نافذة إضافة دفعة
+        function openPaymentModal(invoiceId) {
+            currentInvoiceId = invoiceId;
+            document.getElementById('paymentModal').style.display = 'flex';
+            document.getElementById('paymentAmount').value = '';
+            document.getElementById('paymentType').value = 'الدفعة الأولى';
+        }
+
+        // إضافة دفعة جديدة مع Firebase
+        async function addPayment() {
+            const amount = parseFloat(document.getElementById('paymentAmount').value);
+            const type = document.getElementById('paymentType').value;
+            
+            if (!amount || amount <= 0) {
+                alert('يرجى إدخال مبلغ صحيح');
+                return;
+            }
+            
+            const invoice = allInvoices.find(inv => inv.id === currentInvoiceId);
+            if (invoice) {
+                // تحديث الفاتورة
+                invoice.paidAmount += amount;
+                invoice.remainingAmount = invoice.totalAmount - invoice.paidAmount;
+                
+                if (invoice.remainingAmount === 0) {
+                    invoice.status = 'completed';
+                } else {
+                    invoice.status = 'pending';
+                }
+                
+                // إضافة إلى سجل المدفوعات
+                const payment = {
+                    type: type,
+                    amount: amount,
+                    date: new Date().toLocaleDateString('ar-EG'),
+                    timestamp: new Date().getTime()
+                };
+                
+                if (!invoice.paymentHistory) {
+                    invoice.paymentHistory = [];
+                }
+                invoice.paymentHistory.push(payment);
+                
+                // تحديث بيانات العميل في التخزين المحلي
+                updateClientPayment(invoice.clientId, payment);
+                
+                // إضافة إلى الجرد تلقائياً
+                await addPaymentToInventory(invoice.clientName, amount, type, invoice.id);
+                
+                // تحديث العرض
+                displayInvoices();
+                updateStats();
+                
+                // إغلاق النافذة
+                document.getElementById('paymentModal').style.display = 'none';
+                
+                alert('تم إضافة الدفعة بنجاح وإضافتها إلى الجرد');
+            }
+        }
+
+        // تحديث دفعات العميل في التخزين المحلي
+        function updateClientPayment(clientId, payment) {
+            const clientIndex = savedClients.findIndex(client => client.id === clientId);
+            if (clientIndex !== -1) {
+                if (!savedClients[clientIndex].paymentHistory) {
+                    savedClients[clientIndex].paymentHistory = [];
+                }
+                savedClients[clientIndex].paymentHistory.push(payment);
+                localStorage.setItem('savedClients', JSON.stringify(savedClients));
+                
+                // محاولة تحديث Firebase
+                firebaseApp.updateClient(clientId, {
+                    paymentHistory: savedClients[clientIndex].paymentHistory,
+                    lastUpdated: new Date().getTime()
+                });
+            }
+        }
+
+        // إضافة الدفعة إلى الجرد تلقائياً
+        async function addPaymentToInventory(clientName, amount, paymentType, invoiceId) {
+            const transaction = {
+                id: 'INV-PAY-' + Date.now(),
+                type: 'دخل',
+                category: 'مدفوعات عملاء',
+                amount: amount,
+                description: `دفعة ${paymentType} من العميل ${clientName} - فاتورة ${invoiceId}`,
+                date: new Date().toLocaleDateString('ar-EG', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                }),
+                timestamp: new Date().getTime(),
+                source: 'invoice',
+                invoiceId: invoiceId
+            };
+            
+            // حفظ في الجرد
+            await firebaseApp.addTransaction(transaction);
+        }
+
+        // حذف الفاتورة
+        function deleteInvoice(invoiceId) {
+            if (confirm('هل أنت متأكد من حذف هذه الفاتورة؟')) {
+                allInvoices = allInvoices.filter(inv => inv.id !== invoiceId);
+                filteredInvoices = filteredInvoices.filter(inv => inv.id !== invoiceId);
+                displayInvoices();
+                updateStats();
+                alert('تم حذف الفاتورة بنجاح');
+            }
+        }
+
+        // تحديث الإحصائيات
+        function updateStats() {
+            const statsGrid = document.getElementById('statsGrid');
+            const totalInvoices = filteredInvoices.length;
+            const totalAmount = filteredInvoices.reduce((sum, inv) => sum + inv.totalAmount, 0);
+            const paidAmount = filteredInvoices.reduce((sum, inv) => sum + inv.paidAmount, 0);
+            const completedInvoices = filteredInvoices.filter(inv => inv.status === 'completed').length;
+            
+            statsGrid.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-number">${totalInvoices}</div>
+                    <div class="stat-label">إجمالي الفواتير</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${totalAmount.toFixed(2)}</div>
+                    <div class="stat-label">إجمالي المبالغ (درهم)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${paidAmount.toFixed(2)}</div>
+                    <div class="stat-label">المبالغ المدفوعة (درهم)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${completedInvoices}</div>
+                    <div class="stat-label">الفواتير المكتملة</div>
+                </div>
+            `;
+        }
+
+        // التنقل بين الصفحات
+        function goToMain() {
+            window.location.href = 'index.html';
+        }
+
+        function goToClients() {
+            const password = prompt('أدخل كلمة السر للدخول إلى صفحة العملاء:');
+            if (password === '2004') {
+                window.location.href = 'clients.html';
+            } else if (password !== null) {
+                alert('كلمة السر غير صحيحة!');
+            }
+        }
+
+        function goToInventory() {
+            const password = prompt('أدخل كلمة السر للدخول إلى صفحة الجرد:');
+            if (password === '2004') {
+                window.location.href = 'inventory.html';
+            } else if (password !== null) {
+                alert('كلمة السر غير صحيحة!');
+            }
+        }
+
+        function goToDashboard() {
+            const password = prompt('أدخل كلمة السر للدخول إلى لوحة التحكم:');
+            if (password === '2004') {
+                window.location.href = 'dashboard.html';
+            } else if (password !== null) {
+                alert('كلمة السر غير صحيحة!');
+            }
+        }
+
+        // دالة معالجة تحديثات Firebase
+        window.updateClientsFromFirebase = function(clientsData) {
+            if (clientsData) {
+                savedClients = Object.values(clientsData);
+                localStorage.setItem('savedClients', JSON.stringify(savedClients));
+                
+                generateInvoices();
+                displayInvoices();
+                updateStats();
+                populateClientFilter();
+                console.log("✅ تم تحديث العملاء من Firebase في صفحة الفواتير");
+            }
+        };
+
+        // تحديث الفواتير عند تغيير بيانات العملاء
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'savedClients') {
+                loadClients();
+                generateInvoices();
+                displayInvoices();
+                updateStats();
+                populateClientFilter();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <script type="module" src="firebase-config.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام الجرد والمصروفات - نظام الحسابات</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3a0ca3;
+            --success-color: #4cc9f0;
+            --accent-color: #7209b7;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --danger-color: #e63946;
+            --warning-color: #fca311;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: var(--dark-color);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem;
+            text-align: center;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+        }
+        
+        h1 {
+            color: var(--secondary-color);
+            margin-bottom: 10px;
+            font-size: 2.2rem;
+        }
+        
+        .header-subtitle {
+            color: var(--accent-color);
+            font-size: 1.1rem;
+        }
+        
+        .back-btn {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(135deg, var(--warning-color), #f3722c);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+        
+        .back-btn:hover {
+            transform: translateY(-50%) translateX(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .connection-status {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #4ade80, #22c55e);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+        
+        @media (max-width: 992px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .form-section {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        h2 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--success-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--secondary-color);
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+            outline: none;
+        }
+        
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, var(--success-color), #4895ef);
+            color: white;
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, var(--warning-color), #f3722c);
+            color: white;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger-color), #c1121f);
+            color: white;
+        }
+        
+        .btn-full {
+            width: 100%;
+            margin-top: 10px;
+            padding: 15px;
+            font-size: 1.1rem;
+        }
+        
+        .capital-section {
+            background: linear-gradient(135deg, #4cc9f0, #4361ee);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .capital-display {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .capital-amount {
+            font-size: 3rem;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        
+        .capital-label {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .capital-form {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .transactions-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-top: 20px;
+        }
+        
+        .transactions-table th, .transactions-table td {
+            padding: 15px;
+            text-align: right;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .transactions-table th {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            font-weight: 600;
+        }
+        
+        .transactions-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .transactions-table tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .income-amount {
+            color: var(--success-color);
+            font-weight: bold;
+        }
+        
+        .expense-amount {
+            color: var(--danger-color);
+            font-weight: bold;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-income {
+            color: var(--success-color);
+        }
+        
+        .stat-expense {
+            color: var(--danger-color);
+        }
+        
+        .stat-balance {
+            color: var(--primary-color);
+        }
+        
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .transaction-source {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .transaction-invoice {
+            background: var(--accent-color);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            margin-right: 5px;
+        }
+
+        .transaction-client {
+            background: var(--success-color);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            margin-right: 5px;
+        }
+
+        .btn-sm {
+            padding: 8px 12px;
+            font-size: 0.8rem;
+        }
+
+        /* مؤشر الحفظ التلقائي */
+        .auto-save-indicator {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 15px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .auto-save-indicator.visible {
+            opacity: 1;
+        }
+        
+        .auto-save-indicator.saving {
+            background: linear-gradient(135deg, #4cc9f0, #4361ee);
+            color: white;
+        }
+        
+        .auto-save-indicator.saved {
+            background: linear-gradient(135deg, #4ade80, #22c55e);
+            color: white;
+        }
+
+        .sync-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 15px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 1000;
+        }
+
+        .search-box {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-box input {
+            margin-bottom: 0;
+        }
+
+        .section-icon {
+            background: var(--accent-color);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <button class="back-btn" onclick="goToMain()">
+                <i class="fas fa-arrow-right"></i> العودة
+            </button>
+            <div class="connection-status" id="connectionStatus">
+                <i class="fas fa-wifi"></i> متصل
+            </div>
+            <h1><i class="fas fa-warehouse"></i> نظام الجرد والمصروفات</h1>
+            <p class="header-subtitle">إدارة الدخل والمصروفات ورأس المال - المدفوعات تدمج تلقائياً من العملاء</p>
+        </header>
+        
+        <!-- قسم رأس المال -->
+        <section class="capital-section">
+            <h2><div class="section-icon"><i class="fas fa-money-bill-wave"></i></div> رأس المال</h2>
+            <div class="capital-display">
+                <div class="capital-label">رأس المال الحالي</div>
+                <div class="capital-amount" id="currentCapital">0 درهم</div>
+                <div class="capital-label" id="capitalInfo">إجمالي الدخل: 0 درهم | إجمالي المصروفات: 0 درهم</div>
+            </div>
+            <div class="capital-form">
+                <div class="form-group">
+                    <label for="initialCapital"><i class="fas fa-coins"></i> تعيين رأس المال الابتدائي</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="number" id="initialCapital" placeholder="المبلغ الابتدائي">
+                        <button class="btn btn-warning" id="setInitialCapital">
+                            <i class="fas fa-save"></i> تعيين
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- الإحصائيات -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number stat-income" id="totalIncome">0</div>
+                <div class="stat-label">إجمالي الدخل</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number stat-expense" id="totalExpense">0</div>
+                <div class="stat-label">إجمالي المصروفات</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number stat-balance" id="netBalance">0</div>
+                <div class="stat-label">صافي الربح</div>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <!-- قسم إضافة الدخل -->
+            <section class="form-section">
+                <h2><div class="section-icon"><i class="fas fa-plus-circle"></i></div> إضافة دخل</h2>
+                <form id="incomeForm">
+                    <div class="form-group">
+                        <label for="incomeType"><i class="fas fa-list"></i> نوع الدخل</label>
+                        <select id="incomeType" required>
+                            <option value="">اختر نوع الدخل</option>
+                            <option value="مبيعات">مبيعات</option>
+                            <option value="خدمات">خدمات</option>
+                            <option value="استشارات">استشارات</option>
+                            <option value="إعلانات">إعلانات</option>
+                            <option value="أخرى">أخرى</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="incomeAmount"><i class="fas fa-money-bill"></i> مبلغ الدخل</label>
+                        <input type="number" id="incomeAmount" placeholder="المبلغ بالدرهم" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="incomeDescription"><i class="fas fa-edit"></i> وصف الدخل</label>
+                        <textarea id="incomeDescription" placeholder="وصف تفصيلي للدخل"></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success btn-full">
+                        <i class="fas fa-plus"></i> إضافة الدخل
+                    </button>
+                </form>
+            </section>
+            
+            <!-- قسم إضافة المصروفات -->
+            <section class="form-section">
+                <h2><div class="section-icon"><i class="fas fa-minus-circle"></i></div> إضافة مصروف</h2>
+                <form id="expenseForm">
+                    <div class="form-group">
+                        <label for="expenseType"><i class="fas fa-list"></i> نوع المصروف</label>
+                        <select id="expenseType" required>
+                            <option value="">اختر نوع المصروف</option>
+                            <option value="مواد مكتبية">مواد مكتبية</option>
+                            <option value="إعلانات">إعلانات</option>
+                            <option value="مرتبات">مرتبات</option>
+                            <option value="إيجار">إيجار</option>
+                            <option value="كهرباء وإنترنت">كهرباء وإنترنت</option>
+                            <option value="صيانة">صيانة</option>
+                            <option value="أخرى">أخرى</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="expenseAmount"><i class="fas fa-money-bill"></i> مبلغ المصروف</label>
+                        <input type="number" id="expenseAmount" placeholder="المبلغ بالدرهم" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="expenseDescription"><i class="fas fa-edit"></i> وصف المصروف</label>
+                        <textarea id="expenseDescription" placeholder="وصف تفصيلي للمصروف"></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-danger btn-full">
+                        <i class="fas fa-minus"></i> إضافة المصروف
+                    </button>
+                </form>
+            </section>
+        </div>
+        
+        <!-- سجل المعاملات -->
+        <section class="form-section">
+            <h2><div class="section-icon"><i class="fas fa-history"></i></div> سجل المعاملات</h2>
+            
+            <div class="search-box">
+                <input type="text" id="transactionSearch" placeholder="🔍 ابحث في المعاملات..." style="margin-bottom: 0;">
+            </div>
+            
+            <table class="transactions-table">
+                <thead>
+                    <tr>
+                        <th>التاريخ</th>
+                        <th>النوع</th>
+                        <th>الوصف</th>
+                        <th>المبلغ</th>
+                        <th>المصدر</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="transactionsTable">
+                    <!-- سيتم ملء هذا القسم بالمعاملات -->
+                </tbody>
+            </table>
+        </section>
+
+        <!-- أزرار التنقل -->
+        <div class="nav-buttons">
+            <button class="btn btn-warning" onclick="goToClients()">
+                <i class="fas fa-users"></i> صفحة العملاء
+            </button>
+            <button class="btn btn-warning" onclick="goToInvoices()">
+                <i class="fas fa-file-invoice"></i> صفحة الفواتير
+            </button>
+            <button class="btn btn-primary" onclick="goToDashboard()">
+                <i class="fas fa-tachometer-alt"></i> لوحة التحكم
+            </button>
+            <button class="btn btn-primary" onclick="goToMain()">
+                <i class="fas fa-plus"></i> صفحة التسجيل
+            </button>
+        </div>
+    </div>
+
+    <!-- مؤشر الحفظ التلقائي -->
+    <div class="auto-save-indicator" id="autoSaveIndicator">
+        <i class="fas fa-save"></i>
+        <span id="saveMessage">جارٍ الحفظ...</span>
+    </div>
+
+    <!-- مؤشر المزامنة -->
+    <div class="sync-status" id="syncStatus">
+        <i class="fas fa-sync-alt"></i>
+        <span>جاري المزامنة...</span>
+    </div>
+
+    <script>
+        // الكود JavaScript يبقى كما هو في الإصدار السابق
+        let transactions = [];
+        let initialCapital = 0;
+        let autoSaveTimeout;
+
+        // تهيئة الصفحة
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTransactions();
+            loadInitialCapital();
+            setupEventListeners();
+            setupAutoSave();
+            updateDisplay();
+        });
+
+        // إعداد الحفظ التلقائي
+        function setupAutoSave() {
+            window.addEventListener('storage', function(e) {
+                if (e.key === 'inventoryTransactions' || e.key === 'initialCapital') {
+                    triggerAutoSave();
+                }
+            });
+            
+            setInterval(triggerAutoSave, 30000);
+        }
+
+        // تشغيل الحفظ التلقائي
+        function triggerAutoSave() {
+            clearTimeout(autoSaveTimeout);
+            
+            showAutoSaveIndicator('جارٍ حفظ التغييرات...', 'saving');
+            
+            autoSaveTimeout = setTimeout(() => {
+                loadTransactions();
+                loadInitialCapital();
+                updateDisplay();
+                showAutoSaveIndicator('تم حفظ التغييرات تلقائياً', 'saved');
+            }, 1000);
+        }
+
+        // عرض مؤشر الحفظ
+        function showAutoSaveIndicator(message, type) {
+            const indicator = document.getElementById('autoSaveIndicator');
+            const messageElement = document.getElementById('saveMessage');
+            
+            messageElement.textContent = message;
+            indicator.className = 'auto-save-indicator visible ' + type;
+            
+            setTimeout(() => {
+                indicator.classList.remove('visible');
+            }, 3000);
+        }
+
+        // تحميل المعاملات من التخزين المحلي
+        function loadTransactions() {
+            const storedTransactions = localStorage.getItem('inventoryTransactions');
+            if (storedTransactions) {
+                transactions = JSON.parse(storedTransactions);
+            }
+        }
+
+        // تحميل رأس المال الابتدائي
+        function loadInitialCapital() {
+            const storedCapital = localStorage.getItem('initialCapital');
+            if (storedCapital) {
+                initialCapital = parseFloat(storedCapital) || 0;
+            }
+        }
+
+        // حفظ المعاملات
+        function saveTransactions() {
+            localStorage.setItem('inventoryTransactions', JSON.stringify(transactions));
+        }
+
+        // إعداد مستمعي الأحداث
+        function setupEventListeners() {
+            // form إضافة الدخل
+            document.getElementById('incomeForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                addIncome();
+            });
+            
+            // form إضافة المصروف
+            document.getElementById('expenseForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                addExpense();
+            });
+            
+            // تعيين رأس المال
+            document.getElementById('setInitialCapital').addEventListener('click', function() {
+                setInitialCapital();
+            });
+            
+            // البحث في المعاملات
+            document.getElementById('transactionSearch').addEventListener('input', function() {
+                filterTransactions(this.value);
+            });
+        }
+
+        // إضافة دخل مع Firebase
+        async function addIncome() {
+            const type = document.getElementById('incomeType').value;
+            const amount = parseFloat(document.getElementById('incomeAmount').value);
+            const description = document.getElementById('incomeDescription').value;
+            
+            if (!type || !amount || amount <= 0) {
+                alert('يرجى ملء جميع الحقول بشكل صحيح');
+                return;
+            }
+            
+            const transaction = {
+                id: 'INC-' + Date.now(),
+                type: 'دخل',
+                category: type,
+                amount: amount,
+                description: description,
+                date: new Date().toLocaleDateString('ar-EG', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                }),
+                timestamp: new Date().getTime(),
+                source: 'manual'
+            };
+            
+            // إضافة محلياً
+            transactions.push(transaction);
+            saveTransactions();
+            updateDisplay();
+            resetIncomeForm();
+            
+            // محاولة الإضافة إلى Firebase
+            const result = await firebaseApp.addTransaction(transaction);
+            
+            if (result.success) {
+                showAutoSaveIndicator('تم إضافة الدخل والمزامنة', 'saved');
+            } else {
+                showAutoSaveIndicator('تم الإضافة محلياً (بانتظار الاتصال)', 'saving');
+            }
+            
+            alert('تم إضافة الدخل بنجاح');
+        }
+
+        // إضافة مصروف مع Firebase
+        async function addExpense() {
+            const type = document.getElementById('expenseType').value;
+            const amount = parseFloat(document.getElementById('expenseAmount').value);
+            const description = document.getElementById('expenseDescription').value;
+            
+            if (!type || !amount || amount <= 0) {
+                alert('يرجى ملء جميع الحقول بشكل صحيح');
+                return;
+            }
+            
+            const transaction = {
+                id: 'EXP-' + Date.now(),
+                type: 'مصروف',
+                category: type,
+                amount: amount,
+                description: description,
+                date: new Date().toLocaleDateString('ar-EG', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                }),
+                timestamp: new Date().getTime(),
+                source: 'manual'
+            };
+            
+            // إضافة محلياً
+            transactions.push(transaction);
+            saveTransactions();
+            updateDisplay();
+            resetExpenseForm();
+            
+            // محاولة الإضافة إلى Firebase
+            const result = await firebaseApp.addTransaction(transaction);
+            
+            if (result.success) {
+                showAutoSaveIndicator('تم إضافة المصروف والمزامنة', 'saved');
+            } else {
+                showAutoSaveIndicator('تم الإضافة محلياً (بانتظار الاتصال)', 'saving');
+            }
+            
+            alert('تم إضافة المصروف بنجاح');
+        }
+
+        // تعيين رأس المال الابتدائي مع Firebase
+        async function setInitialCapital() {
+            const amount = parseFloat(document.getElementById('initialCapital').value);
+            
+            if (!amount || amount < 0) {
+                alert('يرجى إدخال مبلغ صحيح');
+                return;
+            }
+            
+            initialCapital = amount;
+            localStorage.setItem('initialCapital', initialCapital.toString());
+            updateDisplay();
+            
+            // محاولة التحديث في Firebase
+            const result = await firebaseApp.updateCapital(initialCapital);
+            
+            if (result.success) {
+                showAutoSaveIndicator('تم تعيين رأس المال والمزامنة', 'saved');
+            } else {
+                showAutoSaveIndicator('تم التعيين محلياً (بانتظار الاتصال)', 'saving');
+            }
+            
+            alert('تم تعيين رأس المال الابتدائي بنجاح');
+        }
+
+        // تحديث العرض
+        function updateDisplay() {
+            updateCapital();
+            updateStats();
+            updateTransactionsTable();
+        }
+
+        // تحديث رأس المال - الإصدار المصحح
+        function updateCapital() {
+            const totalIncome = transactions
+                .filter(t => t.type === 'دخل')
+                .reduce((sum, t) => sum + t.amount, 0);
+            
+            const totalExpense = transactions
+                .filter(t => t.type === 'مصروف')
+                .reduce((sum, t) => sum + t.amount, 0);
+            
+            const currentCapital = initialCapital + totalIncome - totalExpense;
+            
+            document.getElementById('currentCapital').textContent = currentCapital.toFixed(2) + ' درهم';
+            document.getElementById('capitalInfo').textContent = 
+                `إجمالي الدخل: ${totalIncome.toFixed(2)} درهم | إجمالي المصروفات: ${totalExpense.toFixed(2)} درهم`;
+        }
+
+        // تحديث الإحصائيات
+        function updateStats() {
+            const totalIncome = transactions
+                .filter(t => t.type === 'دخل')
+                .reduce((sum, t) => sum + t.amount, 0);
+            
+            const totalExpense = transactions
+                .filter(t => t.type === 'مصروف')
+                .reduce((sum, t) => sum + t.amount, 0);
+            
+            const netBalance = totalIncome - totalExpense;
+            
+            document.getElementById('totalIncome').textContent = totalIncome.toFixed(2);
+            document.getElementById('totalExpense').textContent = totalExpense.toFixed(2);
+            document.getElementById('netBalance').textContent = netBalance.toFixed(2);
+        }
+
+        // تحديث جدول المعاملات
+        function updateTransactionsTable() {
+            const table = document.getElementById('transactionsTable');
+            table.innerHTML = '';
+            
+            if (transactions.length === 0) {
+                table.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 40px; color: #666;">
+                            <i class="fas fa-receipt fa-3x" style="margin-bottom: 20px; opacity: 0.5;"></i>
+                            <h3>لا توجد معاملات</h3>
+                            <p>لم يتم تسجيل أي معاملات حتى الآن</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            // ترتيب المعاملات من الأحدث إلى الأقدم
+            const sortedTransactions = [...transactions].sort((a, b) => b.timestamp - a.timestamp);
+            
+            sortedTransactions.forEach(transaction => {
+                const row = document.createElement('tr');
+                
+                const amountClass = transaction.type === 'دخل' ? 'income-amount' : 'expense-amount';
+                const amountSign = transaction.type === 'دخل' ? '+' : '-';
+                
+                let sourceInfo = '';
+                if (transaction.source === 'invoice') {
+                    sourceInfo = `<span class="transaction-invoice">فاتورة</span>`;
+                } else if (transaction.source === 'clients') {
+                    sourceInfo = `<span class="transaction-client">عميل</span>`;
+                } else {
+                    sourceInfo = `<span style="color: #666;">يدوي</span>`;
+                }
+                
+                row.innerHTML = `
+                    <td>${transaction.date}</td>
+                    <td>${transaction.category}</td>
+                    <td>
+                        ${transaction.description}
+                        ${transaction.autoSynced ? '<div class="transaction-source">مزامنة تلقائية</div>' : ''}
+                    </td>
+                    <td class="${amountClass}">${amountSign} ${transaction.amount} درهم</td>
+                    <td>${sourceInfo}</td>
+                    <td>
+                        <button class="btn btn-danger btn-sm delete-transaction" data-id="${transaction.id}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                
+                // إضافة حدث الحذف
+                const deleteBtn = row.querySelector('.delete-transaction');
+                deleteBtn.addEventListener('click', function() {
+                    deleteTransaction(transaction.id);
+                });
+                
+                table.appendChild(row);
+            });
+        }
+
+        // حذف معاملة
+        async function deleteTransaction(transactionId) {
+            if (confirm('هل أنت متأكد من حذف هذه المعاملة؟')) {
+                transactions = transactions.filter(t => t.id !== transactionId);
+                saveTransactions();
+                updateDisplay();
+                
+                // محاولة الحذف من Firebase
+                const result = await firebaseApp.deleteTransaction(transactionId);
+                
+                if (result.success) {
+                    showAutoSaveIndicator('تم حذف المعاملة والمزامنة', 'saved');
+                } else {
+                    showAutoSaveIndicator('تم الحذف محلياً (بانتظار الاتصال)', 'saving');
+                }
+                
+                alert('تم حذف المعاملة بنجاح');
+            }
+        }
+
+        // تصفية المعاملات
+        function filterTransactions(searchTerm) {
+            const filtered = transactions.filter(transaction => 
+                transaction.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                transaction.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                transaction.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                transaction.amount.toString().includes(searchTerm)
+            );
+            
+            displayFilteredTransactions(filtered);
+        }
+
+        // عرض المعاملات المصفاة
+        function displayFilteredTransactions(filteredTransactions) {
+            const table = document.getElementById('transactionsTable');
+            table.innerHTML = '';
+            
+            if (filteredTransactions.length === 0) {
+                table.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 20px; color: #666;">
+                            لا توجد معاملات مطابقة للبحث
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            const sortedTransactions = [...filteredTransactions].sort((a, b) => b.timestamp - a.timestamp);
+            
+            sortedTransactions.forEach(transaction => {
+                const row = document.createElement('tr');
+                
+                const amountClass = transaction.type === 'دخل' ? 'income-amount' : 'expense-amount';
+                const amountSign = transaction.type === 'دخل' ? '+' : '-';
+                
+                let sourceInfo = '';
+                if (transaction.source === 'invoice') {
+                    sourceInfo = `<span class="transaction-invoice">فاتورة</span>`;
+                } else if (transaction.source === 'clients') {
+                    sourceInfo = `<span class="transaction-client">عميل</span>`;
+                } else {
+                    sourceInfo = `<span style="color: #666;">يدوي</span>`;
+                }
+                
+                row.innerHTML = `
+                    <td>${transaction.date}</td>
+                    <td>${transaction.category}</td>
+                    <td>
+                        ${transaction.description}
+                        ${transaction.autoSynced ? '<div class="transaction-source">مزامنة تلقائية</div>' : ''}
+                    </td>
+                    <td class="${amountClass}">${amountSign} ${transaction.amount} درهم</td>
+                    <td>${sourceInfo}</td>
+                    <td>
+                        <button class="btn btn-danger btn-sm delete-transaction" data-id="${transaction.id}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                
+                const deleteBtn = row.querySelector('.delete-transaction');
+                deleteBtn.addEventListener('click', function() {
+                    deleteTransaction(transaction.id);
+                });
+                
+                table.appendChild(row);
+            });
+        }
+
+        // إعادة تعيين form الدخل
+        function resetIncomeForm() {
+            document.getElementById('incomeForm').reset();
+        }
+
+        // إعادة تعيين form المصروف
+        function resetExpenseForm() {
+            document.getElementById('expenseForm').reset();
+        }
+
+        // التنقل بين الصفحات
+        function goToMain() {
+            window.location.href = 'index.html';
+        }
+
+        function goToClients() {
+            const password = prompt('أدخل كلمة السر للدخول إلى صفحة العملاء:');
+            if (password === '2004') {
+                window.location.href = 'clients.html';
+            } else if (password !== null) {
+                alert('كلمة السر غير صحيحة!');
+            }
+        }
+
+        function goToInvoices() {
+            const password = prompt('أدخل كلمة السر للدخول إلى صفحة الفواتير:');
+            if (password === '2004') {
+                window.location.href = 'invoices.html';
+            } else if (password !== null) {
+                alert('كلمة السر غير صحيحة!');
+            }
+        }
+
+        function goToDashboard() {
+            const password = prompt('أدخل كلمة السر للدخول إلى لوحة التحكم:');
+            if (password === '2004') {
+                window.location.href = 'dashboard.html';
+            } else if (password !== null) {
+                alert('كلمة السر غير صحيحة!');
+            }
+        }
+
+        // دوال معالجة تحديثات Firebase
+        window.updateTransactionsFromFirebase = function(transactionsData) {
+            if (transactionsData) {
+                transactions = Object.values(transactionsData);
+                saveTransactions();
+                updateDisplay();
+                console.log("✅ تم تحديث المعاملات من Firebase في صفحة الجرد");
+            }
+        };
+
+        window.updateSettingsFromFirebase = function(settingsData) {
+            if (settingsData && settingsData.initialCapital) {
+                initialCapital = settingsData.initialCapital;
+                localStorage.setItem('initialCapital', initialCapital.toString());
+                updateDisplay();
+                console.log("✅ تم تحديث رأس المال من Firebase");
+            }
+        };
+
+        // تحديث العرض عند تغيير البيانات
+        window.updateDisplay = updateDisplay;
+    </script>
+</body>
+</html>
